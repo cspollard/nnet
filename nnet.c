@@ -45,40 +45,12 @@ int update(neuron **n) {
 int dumpconnections(neuron **n) {
     for (int i = 0; n[i]; i++) {
         for (int j = 0; n[i]->c[j]; j++) {
-            printf("\t%3d ---(%6.3f)---> %3d\n",
+            printf("%3d ---(%+6.3f)---> %3d\n",
                     i, n[i]->w[j], n[i]->c[j]->i);
         }
         printf("\n");
     }
     fflush(stdout);
-
-    return 0;
-}
-
-
-int main(int argc, char *argv[]) {
-    srand(time(NULL));
-
-    int nmax = (argc>1)? atoi(argv[1]): 100;
-    int cmax = (argc>2)? atoi(argv[2]): nmax/2;
-    int cmin = (argc>3)? atoi(argv[3]): 0;
-    int niter = (argc>4)? atoi(argv[4]): 100;
-    int njter = (argc>5)? atoi(argv[5]): 100;
-
-    neuron **neurons = initialize(nmax);
-    connect(neurons, nmax, cmax, cmin);
-    printf("madeit!\n");
-    fflush(stdout);
-    dumpconnections(neurons);
-    // printf("%.3f\n", neurons[nmax-1]->v);
-
-    for (int i = 0; i < niter; i++) {
-        for (int j = 0; j < njter; j++) {
-            neurons[0]->v = 1;
-            update(neurons);
-        }
-        //printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
-    }
 
     return 0;
 }
