@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <math.h>
 
 typedef struct neuron {
     struct neuron **c;  // children
@@ -17,3 +17,5 @@ int update(neuron **n);
 neuron **initialize(int n);
 
 int connect(neuron *n[], int nmax, int cmax, int cmin);
+
+int backpropagate(neuron *in, neuron *out);

@@ -5,8 +5,7 @@ neuron **initialize(int n) {
     neuron **neurons = malloc((n+1)*sizeof(*neurons));
     for (int i = 0; i < n; i++) {
         neurons[i] = malloc(sizeof(**neurons));
-        neurons[i]->v = ((rand() > RAND_MAX/2)? 1: -1) *
-                    (float) rand() / RAND_MAX;
+        neurons[i]->v = (float) rand() / RAND_MAX;
         neurons[i]->i = i;
     }
     neurons[n] = NULL;
@@ -26,18 +25,19 @@ int connect(neuron *n[], int nmax, int cmax, int cmin) {
         }
         n[i]->c[n[i]->nc] = NULL;
     }
-
     return 0;
 }
 
 
 int update(neuron **n) {
+    float sum;
     for (int i = 0; n[i]; i++) {
+        sum = 0.0;
         for (int j = 0; n[i]->c[j]; j++) {
-            n[i]->c[j]->v += n[i]->w[j] * n[i]->v;
+            sum += n[i]->w[j] * n[i]->c[j]->v;
+            n[i]->c[j]->v = 1.0/(exp(sum) + 1);
         }
     }
-
     return 0;
 }
 
@@ -51,6 +51,15 @@ int dumpconnections(neuron **n) {
         printf("\n");
     }
     fflush(stdout);
+    return 0;
+}
 
+
+int backpropagate(neuron *in, neuron *out) {
+    for (int i = 0; out->c[i]; i++) {
+        float w = out->c[i]->v - in->v;
+        float x = exp(w);
+        out->w[i] += x/pow(x+1, 2)*w;
+    }
     return 0;
 }

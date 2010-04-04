@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "nnet.h"
 
 int main(int argc, char *argv[]) {
@@ -19,8 +20,9 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < njter; j++) {
             neurons[0]->v = 1;
             update(neurons);
+            backpropagate(neurons[0], neurons[nmax-1]);
         }
-        //printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
+        printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
     }
 
     return 0;
