@@ -3,11 +3,9 @@
 #include <math.h>
 
 typedef struct neuron {
-    struct neuron **c;  // children
-    int nc;
+    struct neuron **p;  // parents
     float *w;           // weights
     float v;            // value
-    int i;              // index
 } neuron;
 
 int dumpconnections(neuron **n);
