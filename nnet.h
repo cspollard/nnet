@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#define __NNET 1
+#define __NNET
 
 typedef struct neuron {
     struct neuron **c;  // children
@@ -12,12 +12,12 @@ typedef struct neuron {
     int i;              // index
 } neuron;
 
-int dumpconnections(neuron **n);
+int ndumpconnections(neuron **n);
 
-int update(neuron **n);
+int nupdate(neuron **n);
 
-neuron **initialize(int n);
+neuron **ninitialize(int n);
 
-int connect(neuron *n[], int nmax, int cmax, int cmin);
+int nconnect(neuron *n[], int nmax, int cmax, int cmin);
 
-int backpropagate(neuron *in, neuron *out);
+int nbackpropagate(neuron *in, neuron *out);

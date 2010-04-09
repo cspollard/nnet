@@ -1,7 +1,7 @@
 #include "nnet.h"
 
 
-neuron **initialize(int n) {
+neuron **ninitialize(int n) {
     neuron **neurons = malloc((n+1)*sizeof(*neurons));
     for (int i = 0; i < n; i++) {
         neurons[i] = malloc(sizeof(**neurons));
@@ -13,7 +13,7 @@ neuron **initialize(int n) {
 }
 
 
-int connect(neuron *n[], int nmax, int cmax, int cmin) {
+int nconnect(neuron *n[], int nmax, int cmax, int cmin) {
     for (int i = 0; n[i]; i++) {
         n[i]->nc = (cmax>cmin)? (rand() % (cmax-cmin)) + cmin: cmax;
         n[i]->c = malloc((n[i]->nc+1)*sizeof(*(n[i]->c)));
@@ -29,7 +29,7 @@ int connect(neuron *n[], int nmax, int cmax, int cmin) {
 }
 
 
-int update(neuron **n) {
+int nupdate(neuron **n) {
     float sum;
     for (int i = 0; n[i]; i++) {
         sum = 0.0;
@@ -42,7 +42,7 @@ int update(neuron **n) {
 }
 
 
-int dumpconnections(neuron **n) {
+int ndumpconnections(neuron **n) {
     for (int i = 0; n[i]; i++) {
         for (int j = 0; n[i]->c[j]; j++) {
             printf("%3d ---(%+6.3f)---> %3d\n",
@@ -55,7 +55,7 @@ int dumpconnections(neuron **n) {
 }
 
 
-int backpropagate(neuron *in, neuron *out) {
+int nbackpropagate(neuron *in, neuron *out) {
     for (int i = 0; out->c[i]; i++) {
         float w = out->c[i]->v - in->v;
         float x = exp(w);

@@ -1,5 +1,5 @@
-run: nnet.o main.o
-	clang nnet.o main.o draw.o -o run -lm
+run: nnet.o main.o draw.o
+	clang main.o nnet.o draw.o -g -o run -lm -lGL `sdl-config --cflags --libs`
 
 main.o: main.c
 	clang main.c -c -o main.o

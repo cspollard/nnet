@@ -4,6 +4,8 @@
 #include "draw.h"
 
 int main(int argc, char *argv[]) {
+    setupgl();
+
     srand(time(NULL));
 
     int nmax = (argc>1)? atoi(argv[1]): 100;
@@ -12,19 +14,22 @@ int main(int argc, char *argv[]) {
     int niter = (argc>4)? atoi(argv[4]): 100;
     int njter = (argc>5)? atoi(argv[5]): 100;
 
-    neuron **neurons = initialize(nmax);
-    connect(neurons, nmax, cmax, cmin);
-    dumpconnections(neurons);
-    // printf("%.3f\n", neurons[nmax-1]->v);
+    neuron **neurons = ninitialize(nmax);
+    nconnect(neurons, nmax, cmax, cmin);
+    ndraw(neurons, nmax/10, 10);
+    SDL_Delay(500);
 
+    SDL_Event e;
     for (int i = 0; i < niter; i++) {
         for (int j = 0; j < njter; j++) {
             neurons[0]->v = 1;
-            update(neurons);
-            draw(neurons, nmax/10, 10);
-            // backpropagate(neurons[0], neurons[nmax-1]);
+            nupdate(neurons);
+            ndraw(neurons, nmax/10, 10);
+            SDL_PollEvent(&e);
+            if (e.type == SDL_QUIT)
+                exit(0);
+            SDL_Delay(500);
         }
-        // printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
     }
 
     return 0;
