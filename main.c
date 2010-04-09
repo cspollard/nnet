@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "nnet.h"
+#include "draw.h"
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -20,9 +21,10 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < njter; j++) {
             neurons[0]->v = 1;
             update(neurons);
-            backpropagate(neurons[0], neurons[nmax-1]);
+            draw(neurons, nmax/10, 10);
+            // backpropagate(neurons[0], neurons[nmax-1]);
         }
-        printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
+        // printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
     }
 
     return 0;

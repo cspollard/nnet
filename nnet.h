@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#define __NNET 1
+
 typedef struct neuron {
     struct neuron **c;  // children
     int nc;
