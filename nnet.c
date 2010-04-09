@@ -35,8 +35,8 @@ int nupdate(neuron **n) {
         sum = 0.0;
         for (int j = 0; n[i]->c[j]; j++) {
             sum += n[i]->w[j] * n[i]->c[j]->v;
-            n[i]->c[j]->v = 1.0/(exp(sum) + 1);
         }
+        n[i]->v = 1.0/(exp(sum) + 1);
     }
     return 0;
 }

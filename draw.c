@@ -31,10 +31,12 @@ int setupgl() {
 
 
 int ndraw(neuron **n, int w, int h) {
-    float dx = 1.8 / (w + 1);
-    float dy = 1.8 / (h + 1);
-    float x = -.9;
-    float y = -.9;
+    w = w? w: 1;
+    h = h? h: 1;
+    float dx = 1.5 / w;
+    float dy = 1.5 / h;
+    float x = -.75;
+    float y = -.75;
     float c;
 
     for (int i = 0; n[i]; i++) {
@@ -47,9 +49,9 @@ int ndraw(neuron **n, int w, int h) {
         glVertex3f(x, y+dy, 0);
         glEnd();
 
-        if (!(i%w)) {
+        if (!((i+1) % w)) {
             y += dy;
-            x = -1.0;
+            x = -.75;
         } else
             x += dx;
     }
