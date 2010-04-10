@@ -9,8 +9,8 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     int nmax = (argc>1)? atoi(argv[1]): 100;
-    int w  = (int) sqrt(nmax);
-    int h = w + 1;
+    int w  = 1 + (int) sqrt(nmax);
+    int h = w;
     int cmax = (argc>2)? atoi(argv[2]): nmax/2;
     int cmin = (argc>3)? atoi(argv[3]): 0;
     int niter = (argc>4)? atoi(argv[4]): 100;
@@ -24,13 +24,13 @@ int main(int argc, char *argv[]) {
     SDL_Event e;
     for (int i = 0; i < niter; i++) {
         for (int j = 0; j < njter; j++) {
-            nupdate(neurons);
-            ndraw(neurons, w, h);
-            SDL_PollEvent(&e);
-            if (e.type == SDL_QUIT)
-                exit(0);
-            SDL_Delay(100);
+            nrandupdate(neurons+10, nmax-10);
         }
+        ndraw(neurons, w, h);
+        SDL_PollEvent(&e);
+        if (e.type == SDL_QUIT)
+            exit(0);
+        SDL_Delay(100);
     }
 
     return 0;

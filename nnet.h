@@ -16,6 +16,8 @@ int ndumpconnections(neuron **n);
 
 int nupdate(neuron **n);
 
+int nrandupdate(neuron **n, int nmax);
+
 neuron **ninitialize(int n);
 
 int nconnect(neuron *n[], int nmax, int cmax, int cmin);

@@ -42,6 +42,17 @@ int nupdate(neuron **n) {
 }
 
 
+int nrandupdate(neuron **n, int nmax) {
+    float sum = 0;
+    neuron *pn = n[rand() % nmax];
+    for (int j = 0; pn->c[j]; j++) {
+        sum += pn->w[j] * pn->c[j]->v;
+    }
+    pn->v = 1.0/(exp(sum) +1);
+    return 0;
+}
+
+
 int ndumpconnections(neuron **n) {
     for (int i = 0; n[i]; i++) {
         for (int j = 0; n[i]->c[j]; j++) {
