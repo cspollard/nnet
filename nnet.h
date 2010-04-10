@@ -12,11 +12,16 @@ typedef struct neuron {
     int i;              // index
 } neuron;
 
+typedef struct neuronptr {
+    neuron **n;
+    int nmax;
+} neuronptr;
+
 int ndumpconnections(neuron **n);
 
 int nupdate(neuron **n);
 
-int nrandupdate(neuron **n, int nmax);
+int nrandupdate(void *p);
 
 neuron **ninitialize(int n);
 

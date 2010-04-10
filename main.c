@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 #include "nnet.h"
 #include "draw.h"
 
 int main(int argc, char *argv[]) {
     setupgl();
+
+    pthread_t *threads;
+    pthread_attr_t pattr;
 
     srand(time(NULL));
 
@@ -16,7 +20,20 @@ int main(int argc, char *argv[]) {
     int niter = (argc>4)? atoi(argv[4]): 100;
     int njter = (argc>5)? atoi(argv[5]): 100;
 
+    threads = malloc(njter*sizeof(*threads));
+    pthread_attr_init(&pattr);
+
+    neuronptr *p;
     neuron **neurons = ninitialize(nmax);
+    
+    printf("%p\n", neurons);
+    printf("%p\n", neurons);
+    fflush(stdout);
+
+    (*p).n = neurons;
+    printf("%p\n", neurons);
+    printf("%p\n", neurons);
+    p->nmax = nmax;
     nconnect(neurons, nmax, cmax, cmin);
     ndraw(neurons, w, h);
     SDL_Delay(50);
@@ -24,7 +41,8 @@ int main(int argc, char *argv[]) {
     SDL_Event e;
     for (int i = 0; i < niter; i++) {
         for (int j = 0; j < njter; j++) {
-            nrandupdate(neurons+10, nmax-10);
+            pthread_create(&threads[j], &pattr,
+                    (void *) nrandupdate, (void *) p);
         }
         ndraw(neurons, w, h);
         SDL_PollEvent(&e);

@@ -42,9 +42,12 @@ int nupdate(neuron **n) {
 }
 
 
-int nrandupdate(neuron **n, int nmax) {
+int nrandupdate(void *p) {
+    printf("I made it here.\n");
+    fflush(stdout);
+    neuronptr q = *((neuronptr *) p);
     float sum = 0;
-    neuron *pn = n[rand() % nmax];
+    neuron *pn = q.n[rand() % q.nmax];
     for (int j = 0; pn->c[j]; j++) {
         sum += pn->w[j] * pn->c[j]->v;
     }
