@@ -5,24 +5,30 @@
 int main(int argc, char *argv[]) {
     srand(time(NULL));
 
-    int nmax = (argc>1)? atoi(argv[1]): 100;
-    int cmax = (argc>2)? atoi(argv[2]): nmax/2;
-    int cmin = (argc>3)? atoi(argv[3]): 0;
-    int niter = (argc>4)? atoi(argv[4]): 100;
-    int njter = (argc>5)? atoi(argv[5]): 100;
+    int nmax = (argc>1)? atoi(argv[1]): 5;
+    int niter = (argc>2)? atoi(argv[2]): 10000;
+    float g = (argc>3)? atof(argv[3]): .25;
 
-    neuron **neurons = initialize(nmax);
-    connect(neurons, nmax, cmax, cmin);
-    dumpconnections(neurons);
-    // printf("%.3f\n", neurons[nmax-1]->v);
+    neuron **inputs = ninitialize(2);
+    neuron **hidden = ninitialize(nmax);
+    neuron **output = ninitialize(1);
 
-    for (int i = 0; i < niter; i++) {
-        for (int j = 0; j < njter; j++) {
-            neurons[0]->v = 1;
-            update(neurons);
-            backpropagate(neurons[0], neurons[nmax-1]);
-        }
-        printf("neuron %d: %.3f\n", nmax-1, neurons[nmax-1]->v);
+    nconnect(output, hidden, 10);
+    nconnect(hidden, inputs, 2);
+    // printf("%p\n", inputs[0]->p);
+    // fflush(stdout);
+
+    float input[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    float target[4][1] = {{0}, {1}, {1}, {0}};
+
+    int i;
+    for(int j = 0; ; j++) {
+        i = rand() % 4;
+        // ndumpconnections(output);
+        // ndumpconnections(hidden);
+        ntrain(inputs, hidden, output, input[i], target[i], g, (j > niter));
+        if (j > niter)
+            while (getc(stdin) != '\n');
     }
 
     return 0;

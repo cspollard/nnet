@@ -6,14 +6,20 @@ typedef struct neuron {
     struct neuron **p;  // parents
     float *w;           // weights
     float v;            // value
+    float err;          // error
 } neuron;
 
-int dumpconnections(neuron **n);
+int ndumpconnections(neuron **n);
 
-int update(neuron **n);
+int nupdate(neuron **n);
 
-neuron **initialize(int n);
+neuron **ninitialize(int n);
 
-int connect(neuron *n[], int nmax, int cmax, int cmin);
+int nconnect(neuron *n[], neuron *p[], int pmax);
 
-int backpropagate(neuron *in, neuron *out);
+int nbackpropagate(neuron **n, float g);
+
+float nfinderr(neuron **n, float values[]);
+
+int ntrain(neuron **input, neuron **hidden, neuron **output,
+        float inputs[], float target[], float g, int debug);
