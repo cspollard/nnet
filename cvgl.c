@@ -102,20 +102,20 @@ void display(void) {
     glLoadIdentity();  
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
+    /*
 	glBindTexture(GL_TEXTURE_2D, texture1);
         glTexCoord2f(0.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(-1.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
     glEnd();
-    /*
+    */
 	glBindTexture(GL_TEXTURE_2D, texture2);
         glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(0.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(1.0, -1.0);
     glEnd();
-    */
     SDL_GL_SwapBuffers();
 }
 
@@ -155,6 +155,7 @@ int sdl_main() {
     }
     assert(capture != NULL);
 
+    float *data0;
     float *data;
     IplImage *recon;
     IplImage *img;
@@ -175,7 +176,7 @@ int sdl_main() {
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 1) {
+    while (i++ < 10000) {
         printf("%d\n", i);
         fflush(stdout);
         SDL_PollEvent(&e);
@@ -199,7 +200,7 @@ int sdl_main() {
         cvReleaseImage(&cpy);
         free(data);
 
-        hupdate(pnet, .2);
+        hupdate(pnet, .1);
         // hdumplayer(pnet, 0);
         data = hreconstruction(pnet);
 
