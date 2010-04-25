@@ -63,7 +63,10 @@ float *getimagedata(IplImage *img) {
         for (int j = 0; j < img->width; j++) {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
-                data[m+n+k] = (float) (img->imageData[l+n+k] / 255.0);
+                data[m+n+k] = ((unsigned char) img->imageData[l+n+k]) / 255.0;
+                printf("imageData[%d]: %u\n", l+n+k, img->imageData[m+n+k]);
+                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                fflush(stdout);
             }
         }
     }
@@ -162,8 +165,6 @@ int sdl_main() {
     n /= r;
 
     int nneurons[] = {n, 10};
-    printf("initializing neurons\n");
-    fflush(stdout);
     hnet *pnet = hinitialize(2, nneurons);
 
     SDL_Event e;
@@ -185,7 +186,6 @@ int sdl_main() {
         }
 
         data = getimagedata(img);
-        cvReleaseImage(&img);
 
         hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
