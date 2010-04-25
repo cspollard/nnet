@@ -14,6 +14,16 @@
 GLuint texture1; // the array for our incoming image
 GLuint texture2; // the array for our reconstructed image
 
+IplImage *reduce(IplImage *img) {
+    IplImage *tmp1 = cvCreateImage(cvSize(320, 240), IPL_DEPTH_32F, 3);
+    IplImage *tmp2 = cvCreateImage(cvSize(160, 120), IPL_DEPTH_32F, 3);
+    cvPyrDown(img, tmp1, CV_GAUSSIAN_5x5);
+    cvPyrDown(tmp1, tmp2, CV_GAUSSIAN_5x5);
+    cvReleaseImage(&tmp1);
+    return tmp2;
+}
+
+
 
 IplImage *setimagedata(float *data, int n) {
     IplImage *img  = cvCreateImage(cvSize(640, 480), IPL_DEPTH_32F, 3);
@@ -116,28 +126,33 @@ int setupgl() {
     }
     assert(capture != NULL);
 
-    int nneurons[] = {640*480*3, 100};
+    int n = 160*120*3;
+
+    int nneurons[] = {n, n};
     printf("initializing neurons\n");
     fflush(stdout);
     hnet *pnet = hinitialize(2, nneurons);
 
     IplImage *image = cvQueryFrame(capture);
-    float *data = getimagedata(image, 640*480*3);
+    printf("reducing image size");
+    IplImage *img = reduce(image);
+
+    float *data = getimagedata(img, n);
     hsetinputs(pnet, data, 0);
     printf("setting inputs.\n");
     fflush(stdout);
-    hupdate(pnet, .2);
+    hupdate(pnet, .3);
     free(data);
     data = hreconstruction(pnet);
     printf("reconstructing.\n");
     fflush(stdout);
 
-    IplImage *recon = setimagedata(data, 640*480*3);
+    IplImage *recon = setimagedata(data, n);
 	
     SDL_Event e;
     while (1) {
         // load the iplimages to the opengl textures
-        loadTexture_Ipl(image, &texture1); 
+        loadTexture_Ipl(img, &texture1); 
         loadTexture_Ipl(recon, &texture2);
 
         SDL_PollEvent(&e);
@@ -147,13 +162,19 @@ int setupgl() {
         display();
 
         image = cvQueryFrame(capture);
-        float *data = getimagedata(image, 640*480*3);
+        printf("reducing image size");
+        IplImage *img = reduce(image);
+        float *data = getimagedata(image, n);
+        printf("setting inputs.\n");
+        fflush(stdout);
         hsetinputs(pnet, data, 0);
         hupdate(pnet, .2);
         free(data);
+        printf("reconstructing.\n");
+        fflush(stdout);
         data = hreconstruction(pnet);
         cvReleaseImage(&recon);
-        IplImage *recon = setimagedata(data, 640*480*3);
+        IplImage *recon = setimagedata(data, n);
     }
     //Free our texture
     FreeTexture(texture1);
