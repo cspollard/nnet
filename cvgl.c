@@ -44,7 +44,7 @@ IplImage *setimagedata(float *data, int w, int h, int nc)  {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
                 img->imageData[l+n+k] = (unsigned char) (data[m+n+k] * 255.0);
-                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
                 // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
                 // fflush(stdout);
             }
@@ -69,7 +69,7 @@ float *getimagedata(IplImage *img) {
             for (int k = 0; k < img->nChannels; k++) {
                 data[m+n+k] = (unsigned char) img->imageData[l+n+k] / 255.0;
                 // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
-                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
                 // fflush(stdout);
             }
         }
@@ -176,6 +176,8 @@ int sdl_main() {
     SDL_Event e;
     int i = 0;
     while (i++ < 1) {
+        printf("%d\n", i);
+        fflush(stdout);
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -192,13 +194,14 @@ int sdl_main() {
 
         data = getimagedata(img);
 
-        // hsetinputs(pnet, data, 0);
+        hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
         cvReleaseImage(&cpy);
-        // free(data);
+        free(data);
 
-        // hupdate(pnet, .2);
-        // data = hreconstruction(pnet);
+        hupdate(pnet, .2);
+        // hdumplayer(pnet, 0);
+        data = hreconstruction(pnet);
 
         // hdumplayer(pnet, 1);
 
