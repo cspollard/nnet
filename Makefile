@@ -7,7 +7,7 @@ main.o: main.c
 	clang main.c -c -o main.o
 
 hnet.o: hnet.c
-	clang hnet.c -c -o hnet.o
+	clang hnet.c -c -o hnet.o -lm
 
 cvgl.o: cvgl.c
 	clang cvgl.c -c -o cvgl.o
