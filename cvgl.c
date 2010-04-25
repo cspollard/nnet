@@ -3,55 +3,6 @@
 GLuint texture1; // the array for our incoming image
 GLuint texture2; // the array for our reconstructed image
 
-void convertbf(IplImage *byte_img, IplImage *float_img) {
-    if ((byte_img->width != float_img->width) ||
-            (byte_img->height != float_img->height) ||
-            (byte_img->nChannels != float_img->nChannels) ||
-            (byte_img->depth != IPL_DEPTH_8U) ||
-            (float_img->depth != IPL_DEPTH_32F)) {
-        printf("convertbf error.  Aborting...\n");
-        exit(0);
-    }
-    unsigned char *runner1 = (unsigned char *) byte_img->imageDataOrigin;
-    float *runner2 = (float *) float_img->imageDataOrigin;
-    int skip = byte_img->widthStep - byte_img->nChannels * byte_img->width;
-
-    for(int i = 0; i < byte_img->height; i++) {
-        for(int j = 0; j < byte_img->width; j++) {
-            for(int k = 0; k < byte_img->nChannels; k++) {
-                *runner2++ = (float) (*runner1++);
-                printf("%4.f\n", *runner2);
-            }
-        }
-        runner1 += skip;
-    }
-}
-
-void convertfb(IplImage *float_img, IplImage *byte_img) {
-    if ((byte_img->width != float_img->width) ||
-            (byte_img->height != float_img->height) ||
-            (byte_img->nChannels != float_img->nChannels) ||
-            (byte_img->depth != IPL_DEPTH_8U) ||
-            (float_img->depth != IPL_DEPTH_32F)) {
-        printf("convertfb error.  Aborting...\n");
-        exit(0);
-    }
-    float *runner1 = (float *) float_img->imageDataOrigin;
-    unsigned char *runner2 = (unsigned char *) byte_img->imageDataOrigin;
-    int skip = float_img->widthStep - float_img->nChannels * float_img->width;
-
-    for(int i=0; i < byte_img->height; i++) {
-        for(int j=0; j < byte_img->width; j++) {
-            for(int k=0; k < byte_img->nChannels; k++) {
-                *runner2 = (unsigned char) *runner1;
-                runner2++;
-                runner1++;
-            }
-        }
-        runner1 += skip;
-    }
-}
-
 IplImage *reduce(IplImage *img, int n) {
     if (!n) {
         return img;
@@ -82,29 +33,40 @@ IplImage *reduce(IplImage *img, int n) {
     return tmp2;
 }
 
-
-
 IplImage *setimagedata(float *data, int w, int h, int nc)  {
-    IplImage *img  = cvCreateImage(cvSize(w, h), IPL_DEPTH_32F, nc);
+    IplImage *img  = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, nc);
 
-    int n = nc*w*h;
-    for (int i = 0; i < n; i++) {
-        img->imageData[i] = data[i];
+    int l, m, n;
+    for (int i = 0; i < img->height; i++) {
+        l = i * img->widthStep;
+        m = i * img->width;
+        for (int j = 0; j < img->width; j++) {
+            int n = j * img->nChannels;
+            for (int k = 0; k < img->nChannels; k++) {
+                img->ImageData[l+n+k] = (int) (data[m+n+k] * 255.0);
+            }
+        }
     }
-
     return img;
 }
 
 float *getimagedata(IplImage *img) {
-    int n = img->width*img->height*img->nChannels;
+    int n = img->width * img->height * img->nChannels;
 
     float *data = (float *) malloc(n*sizeof(*data));
     if (!data) return NULL;
 
-    for (int i = 0; i < n; i++) {
-        data[i] = img->imageData[i];
+    int l, m, n;
+    for (int i = 0; i < img->height; i++) {
+        l = i * img->widthStep;
+        m = i * img->width;
+        for (int j = 0; j < img->width; j++) {
+            int n = j * img->nChannels;
+            for (int k = 0; k < img->nChannels; k++) {
+                data[m+n+k] = (float) (img->imageData[l+n+k] / 255.0);
+            }
+        }
     }
-
     return data;
 }
 
