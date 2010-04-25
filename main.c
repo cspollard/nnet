@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <time.h>
 #include "cvgl.h" 
-#include "hnet.h"
+
+#ifndef __hnet
+    #include "hnet.h"
+#endif
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -10,7 +13,7 @@ int main(int argc, char *argv[]) {
     hnet *pnet = hinitialize(5, nneurons);
     // hdumpconnections(*pnet);
 
-    setupgl();
+    sdl_main();
 
     return 0;
 }

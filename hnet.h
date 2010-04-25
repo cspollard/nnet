@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifndef __hnet
+    #define __hnet 0
+#endif
+
 typedef struct hneuron {
     float v;
     float *weights;
