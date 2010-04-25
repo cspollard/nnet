@@ -30,4 +30,6 @@ int hsetinputs(hnet net, float inputs[], int sigmoid);
 
 int hupdatelayers(hlayer l, hlayer m, float e);
 
-int hupdate(hnet net);
+int hupdate(hnet net, float e);
+
+float *hreconstruction(hnet net);

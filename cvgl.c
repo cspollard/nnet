@@ -8,9 +8,33 @@
 #include <ctype.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "hnet.h"
+#include "cvgl.h"
 
-GLuint texture; //the array for our texture
-GLfloat angle = 0.0;
+GLuint texture1; // the array for our incoming image
+GLuint texture2; // the array for our reconstructed image
+
+
+IplImage *setimagedata(float *data, int n) {
+    IplImage *img  = cvCreateImage(cvSize(640, 480), IPL_DEPTH_32F, 3);
+
+    for (int i = 0; i < n; i++) {
+        img->imageData[i] = data[i];
+    }
+
+    return img;
+}
+
+float *getimagedata(IplImage *img, int n) {
+    float *data = (float *) malloc(n*sizeof(*data));
+    if (!data) return NULL;
+
+    for (int i = 0; i < n; i++) {
+        data[i] = img->imageData[i];
+    }
+
+    return data;
+}
 
 //The IplImage to OpenGl texture function
 int loadTexture_Ipl(IplImage *image, GLuint *text) {
@@ -37,11 +61,17 @@ void display(void) {
     glLoadIdentity();  
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture1);
         glTexCoord2f(0.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(-1.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
+    glEnd();
+	glBindTexture(GL_TEXTURE_2D, texture2);
+        glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 2.0);
+        glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 2.0);
+        glTexCoord2f(1.0, 1.0); glVertex2f(0.0, 0.0);
+        glTexCoord2f(0.0, 1.0); glVertex2f(1.0, 0.0);
     glEnd();
     SDL_GL_SwapBuffers();
 }
@@ -86,22 +116,44 @@ int setupgl() {
     }
     assert(capture != NULL);
 
+    int nneurons[] = {640*480*3, 640*480*3};
+    hnet *pnet = hinitialize(2, nneurons);
+    hnet net = *pnet;
+
     IplImage *image = cvQueryFrame(capture);
+    float *data = getimagedata(image, 640*480*3);
+    hsetinputs(net, data, 0);
+    hupdate(net, .2);
+    free(data);
+    data = hreconstruction(net);
+
+    IplImage *recon = setimagedata(data, 640*480*3);
 	
     SDL_Event e;
     while (1) {
-        //The load iplimage to opengl texture
-        loadTexture_Ipl(image, &texture); 
+        // load the iplimages to the opengl textures
+        loadTexture_Ipl(image, &texture1); 
+        loadTexture_Ipl(recon, &texture2);
 
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
 
         display();
+
         image = cvQueryFrame(capture);
+        float *data = getimagedata(image, 640*480*3);
+        hsetinputs(net, data, 0);
+        hupdate(net, .2);
+        free(data);
+        data = hreconstruction(net);
+        cvReleaseImage(&recon);
+        IplImage *recon = setimagedata(data, 640*480*3);
     }
     //Free our texture
-    FreeTexture(texture);
+    FreeTexture(texture1);
+    FreeTexture(texture2);
 	
     return 0;
-} 
+}
+

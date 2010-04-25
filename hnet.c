@@ -75,9 +75,9 @@ int hdumpconnections(hnet net) {
     return 0;
 }
 
-int hsetinputs(hnet net, float inputs[], int sigmoid) {
+int hsetinputs(hnet net, float inputs[], int sig) {
     int n = net.layers[0].nneurons;
-    if (sigmoid) {
+    if (sig) {
         for (int i = 0; i < n; i++) {
             net.layers[0].neurons[i].v = sigmoid(inputs[i]);
         }
@@ -118,7 +118,7 @@ int hupdatelayers(hlayer k, hlayer l, float e) {
         for (int j = 0; j < m; j++) {
             sum += weights[i][j] * l.neurons[i].v;
         }
-        k.neurons[j].v = sigmoid(sum);
+        k.neurons[i].v = sigmoid(sum);
     }
 
     for (int j = 0; j < m; j++) {
@@ -137,10 +137,10 @@ int hupdatelayers(hlayer k, hlayer l, float e) {
     return 0;
 }
 
-int hupdate(hnet net) {
+int hupdate(hnet net, float e) {
     int nup = net.nlayers - 1;
     for (int i = 0; i < nup; i++) {
-        hupdatelayers(net.layers[i], net.layers[i+1]);
+        hupdatelayers(net.layers[i], net.layers[i+1], e);
     }
     return 0;
 }
