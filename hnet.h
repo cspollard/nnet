@@ -24,12 +24,12 @@ float sigmoid(float x);
 
 hnet *hinitialize(int nlayers, int nneurons[]);
 
-int hdumpconnections(hnet net);
+int hdumpconnections(hnet *net);
 
-int hsetinputs(hnet net, float inputs[], int sigmoid);
+int hsetinputs(hnet *net, float inputs[], int sigmoid);
 
-int hupdatelayers(hlayer l, hlayer m, float e);
+int hupdatelayers(hlayer *l, hlayer *m, float e);
 
-int hupdate(hnet net, float e);
+int hupdate(hnet *net, float e);
 
-float *hreconstruction(hnet net);
+float *hreconstruction(hnet *net);

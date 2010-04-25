@@ -116,16 +116,21 @@ int setupgl() {
     }
     assert(capture != NULL);
 
-    int nneurons[] = {640*480*3, 640*480*3};
+    int nneurons[] = {640*480*3, 100};
+    printf("initializing neurons\n");
+    fflush(stdout);
     hnet *pnet = hinitialize(2, nneurons);
-    hnet net = *pnet;
 
     IplImage *image = cvQueryFrame(capture);
     float *data = getimagedata(image, 640*480*3);
-    hsetinputs(net, data, 0);
-    hupdate(net, .2);
+    hsetinputs(pnet, data, 0);
+    printf("setting inputs.\n");
+    fflush(stdout);
+    hupdate(pnet, .2);
     free(data);
-    data = hreconstruction(net);
+    data = hreconstruction(pnet);
+    printf("reconstructing.\n");
+    fflush(stdout);
 
     IplImage *recon = setimagedata(data, 640*480*3);
 	
@@ -143,10 +148,10 @@ int setupgl() {
 
         image = cvQueryFrame(capture);
         float *data = getimagedata(image, 640*480*3);
-        hsetinputs(net, data, 0);
-        hupdate(net, .2);
+        hsetinputs(pnet, data, 0);
+        hupdate(pnet, .2);
         free(data);
-        data = hreconstruction(net);
+        data = hreconstruction(pnet);
         cvReleaseImage(&recon);
         IplImage *recon = setimagedata(data, 640*480*3);
     }
