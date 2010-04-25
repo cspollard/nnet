@@ -39,12 +39,12 @@ IplImage *setimagedata(float *data, int w, int h, int nc)  {
     int l, m, n;
     for (int i = 0; i < img->height; i++) {
         l = i * img->widthStep;
-        m = i * img->width;
+        m = i * img->width * img->nChannels;
         for (int j = 0; j < img->width; j++) {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
                 img->imageData[l+n+k] = (unsigned char) (data[m+n+k] * 255.0);
-                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
                 // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
                 // fflush(stdout);
             }
@@ -69,7 +69,7 @@ float *getimagedata(IplImage *img) {
             for (int k = 0; k < img->nChannels; k++) {
                 data[m+n+k] = (unsigned char) img->imageData[l+n+k] / 255.0;
                 // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
-                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
                 // fflush(stdout);
             }
         }
@@ -175,7 +175,7 @@ int sdl_main() {
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 10000) {
+    while (i++ < 1) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
