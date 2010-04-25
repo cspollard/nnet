@@ -1,4 +1,4 @@
-#include "hinton.h"
+#include "hnet.h"
 
 hnet *hinitialize(int nlayers, int nneurons[]) {
     hnet *pnet = (hnet *) malloc(sizeof(*pnet));
@@ -9,16 +9,15 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
     hneuron *neurons;
     for (int i = 0; i < nlayers; i++) {
         n = nneurons[i];
-        neurons = (hneuron *) malloc((n+1)*sizeof(*neurons));
+        neurons = (hneuron *) malloc(n*sizeof(*neurons));
         if (!neurons) return NULL;
 
         for (int j = 0; j < n; j++)
             neurons[j].v = 0.0;
 
-        neurons[i][n] = NULL;
         layers[i].neurons = neurons;
+        layers[i].nneurons = n;
     }
-    layers[nlayers] = NULL;
 
     float ***weights = (float ***) malloc(nlayers*sizeof(*weights));
     if (!weights) return NULL;
@@ -36,15 +35,12 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
             if (!weights[i][j]) return NULL;
 
             for (int k = 0; k < m; k++) {
-                weights[i][j][k] = rand() / RAND_MAX;
+                weights[i][j][k] = rand() / (float) RAND_MAX;
             }
-            weights[i][j][m] = NULL;
             layers[i].neurons[j].weights = weights[i][j];
         }
-        weights[i][n] = NULL;
         layers[i].weights = weights[i];
     }
-    weights[nlayers-1] = NULL;
 
     pnet->nlayers = nlayers;
     pnet->layers = (hlayer *) layers;
@@ -57,13 +53,13 @@ int hdumpconnections(hnet net) {
     int n, m, l;
     
     n = net.nlayers;
-    for (int i = 0; net.layers[i+1]; i++) {
+    for (int i = 0; i < n; i++) {
         m = net.layers[i].nneurons;
         printf("Layer %d\n------------------\n", i);
-        for (int j = 0; net.layers[i].neurons[j]; j++) {
+        for (int j = 0; j < m; j++) {
             l = net.layers[i+1].nneurons;
             printf("Neuron %d\n------------------\n", j);
-            for (int k = 0; net.layers[i+1].neurons[k]; k++) {
+            for (int k = 0; k < l; k++) {
                 printf("Connection %d: %.4f\n", k,
                         net.layers[i].neurons[j].weights[k]);
             }

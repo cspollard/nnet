@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <time.h>
-#include "webcam.h" 
-#include "nnet.h"
+// #include "webcam.h" 
+#include "hnet.h"
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));

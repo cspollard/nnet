@@ -1,3 +1,7 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 typedef struct hneuron {
     float v;
     float *weights;
@@ -17,4 +21,4 @@ typedef struct hnet {
 
 hnet *hinitialize(int nlayers, int nneurons[]);
 
-int hdumpconnections(hnet *net);
+int hdumpconnections(hnet net);
