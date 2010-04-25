@@ -39,8 +39,10 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
             }
             layers[i].neurons[j].weights = weights[i][j];
         }
+        weights[i][n] = NULL;
         layers[i].weights = weights[i];
     }
+    weights[nlayers] = NULL;
 
     pnet->nlayers = nlayers;
     pnet->layers = (hlayer *) layers;
@@ -53,7 +55,7 @@ int hdumpconnections(hnet net) {
     int n, m, l;
     
     n = net.nlayers;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n-1; i++) {
         m = net.layers[i].nneurons;
         printf("Layer %d\n------------------\n", i);
         for (int j = 0; j < m; j++) {
