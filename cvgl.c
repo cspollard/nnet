@@ -43,7 +43,10 @@ IplImage *setimagedata(float *data, int w, int h, int nc)  {
         for (int j = 0; j < img->width; j++) {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
-                img->imageData[l+n+k] = (int) (data[m+n+k] * 255.0);
+                img->imageData[l+n+k] = (unsigned char) (data[m+n+k] * 255.0);
+                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
+                // fflush(stdout);
             }
         }
     }
@@ -56,17 +59,18 @@ float *getimagedata(IplImage *img) {
     float *data = (float *) malloc(n*sizeof(*data));
     if (!data) return NULL;
 
+    // printf("img w, h = %d, %d\n", img->width, img->height);
     int l, m;
     for (int i = 0; i < img->height; i++) {
         l = i * img->widthStep;
-        m = i * img->width;
+        m = i * img->width * img->nChannels;
         for (int j = 0; j < img->width; j++) {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
-                data[m+n+k] = ((unsigned char) img->imageData[l+n+k]) / 255.0;
-                printf("imageData[%d]: %u\n", l+n+k, img->imageData[m+n+k]);
-                printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
-                fflush(stdout);
+                data[m+n+k] = (unsigned char) img->imageData[l+n+k] / 255.0;
+                // printf("imageData[%d]: %u\n", l+n+k, (unsigned char) img->imageData[m+n+k]);
+                // printf("data[%d]: %f\n", m+n+k, data[m+n+k]);
+                // fflush(stdout);
             }
         }
     }
@@ -104,12 +108,14 @@ void display(void) {
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
     glEnd();
+    /*
 	glBindTexture(GL_TEXTURE_2D, texture2);
         glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(0.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(1.0, -1.0);
     glEnd();
+    */
     SDL_GL_SwapBuffers();
 }
 
@@ -169,7 +175,7 @@ int sdl_main() {
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 10) {
+    while (i++ < 10000) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -179,7 +185,6 @@ int sdl_main() {
         cvCopyImage(image, cpy);
 
         img = reduce(cpy, p);
-        cvReleaseImage(&cpy);
         if (!img) {
             printf("reduce error.\n");
             exit(1);
@@ -187,19 +192,20 @@ int sdl_main() {
 
         data = getimagedata(img);
 
-        hsetinputs(pnet, data, 0);
+        // hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
-        free(data);
+        cvReleaseImage(&cpy);
+        // free(data);
 
-        hupdate(pnet, .2);
-        data = hreconstruction(pnet);
+        // hupdate(pnet, .2);
+        // data = hreconstruction(pnet);
 
         // hdumplayer(pnet, 1);
 
         recon = setimagedata(data, img->width, img->height, nc);
         free(data);
 
-        loadTexture_Ipl(img, &texture1); 
+        // loadTexture_Ipl(img, &texture1); 
         loadTexture_Ipl(recon, &texture2);
         display();
 

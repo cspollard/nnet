@@ -59,7 +59,7 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
 int hdumplayer(hnet *net, int layer) {
     int n = net->layers[layer].nneurons;
     for (int i = 0; i < n; i++) {
-        printf("Neuron %d: %4.f\n", i, net->layers[layer].neurons[i].v);
+        printf("Neuron %d: %f\n", i, net->layers[layer].neurons[i].v);
     }
     return 0;
 }
@@ -75,7 +75,7 @@ int hdumpconnections(hnet *net) {
             l = net->layers[i+1].nneurons;
             printf("Neuron %d\n------------------\n", j);
             for (int k = 0; k < l; k++) {
-                printf("Connection %d: %.4f\n", k,
+                printf("Connection %d: %f\n", k,
                         net->layers[i].neurons[j].weights[k]);
             }
         }
