@@ -16,6 +16,6 @@ int setupgl();
 
 int sdl_main();
 
-float *getimagedata(IplImage *img, int n);
+float *getimagedata(IplImage *img);
 
-IplImage *setimagedata(float *data, int n);
+IplImage *setimagedata(float *data, int w, int h, int nc);

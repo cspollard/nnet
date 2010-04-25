@@ -9,19 +9,18 @@ void convertbf(IplImage *byte_img, IplImage *float_img) {
             (byte_img->nChannels != float_img->nChannels) ||
             (byte_img->depth != IPL_DEPTH_8U) ||
             (float_img->depth != IPL_DEPTH_32F)) {
-        printf("convertByte2Float error.  Aborting...\n");
+        printf("convertbf error.  Aborting...\n");
         exit(0);
     }
     unsigned char *runner1 = (unsigned char *) byte_img->imageDataOrigin;
     float *runner2 = (float *) float_img->imageDataOrigin;
     int skip = byte_img->widthStep - byte_img->nChannels * byte_img->width;
 
-    for(int i=0; i < byte_img->height; i++) {
-        for(int j=0; j < byte_img->width; j++) {
-            for(int k=0; k < byte_img->nChannels; k++) {
-                *runner2 = (float) *runner1;
-                runner2++;
-                runner1++;
+    for(int i = 0; i < byte_img->height; i++) {
+        for(int j = 0; j < byte_img->width; j++) {
+            for(int k = 0; k < byte_img->nChannels; k++) {
+                *runner2++ = (float) (*runner1++);
+                printf("%4.f\n", *runner2);
             }
         }
         runner1 += skip;
@@ -34,17 +33,17 @@ void convertfb(IplImage *float_img, IplImage *byte_img) {
             (byte_img->nChannels != float_img->nChannels) ||
             (byte_img->depth != IPL_DEPTH_8U) ||
             (float_img->depth != IPL_DEPTH_32F)) {
-        printf("convertByte2Float error.  Aborting...\n");
+        printf("convertfb error.  Aborting...\n");
         exit(0);
     }
-    unsigned char *runner1 = (unsigned char *) byte_img->imageDataOrigin;
-    float *runner2 = (float *) float_img->imageDataOrigin;
-    int skip = byte_img->widthStep - byte_img->nChannels * byte_img->width;
+    float *runner1 = (float *) float_img->imageDataOrigin;
+    unsigned char *runner2 = (unsigned char *) byte_img->imageDataOrigin;
+    int skip = float_img->widthStep - float_img->nChannels * float_img->width;
 
     for(int i=0; i < byte_img->height; i++) {
         for(int j=0; j < byte_img->width; j++) {
             for(int k=0; k < byte_img->nChannels; k++) {
-                *runner1 = (float) *runner2;
+                *runner2 = (unsigned char) *runner1;
                 runner2++;
                 runner1++;
             }
@@ -53,21 +52,42 @@ void convertfb(IplImage *float_img, IplImage *byte_img) {
     }
 }
 
-IplImage *reduce(IplImage *img) {
-    IplImage *tmp1 = cvCreateImage(cvSize(320, 240), IPL_DEPTH_8U, 3);
-    IplImage *tmp2 = cvCreateImage(cvSize(160, 120), IPL_DEPTH_8U, 3);
-    
+IplImage *reduce(IplImage *img, int n) {
+    if (!n) {
+        return img;
+    }
+
+    int h = img->height;
+    int w = img->width;
+    if (h%2 || w%2) {
+        printf("Illegal width/height.\n");
+        return NULL;
+    }
+    h /= 2;
+    w /= 2;
+
+    int depth = img->depth;
+    int nChannels = img->nChannels;
+    IplImage *tmp1;
+    IplImage *tmp2;
+
+    tmp1 = cvCreateImage(cvSize(w, h), depth, nChannels);
+
     cvPyrDown(img, tmp1, CV_GAUSSIAN_5x5);
-    cvPyrDown(tmp1, tmp2, CV_GAUSSIAN_5x5);
-    cvReleaseImage(&tmp1);
+
+    tmp2 = reduce(tmp1, n-1);
+    if (n != 1)
+        cvReleaseImage(&tmp1);
+
     return tmp2;
 }
 
 
 
-IplImage *setimagedata(float *data, int n) {
-    IplImage *img  = cvCreateImage(cvSize(160, 120), IPL_DEPTH_32F, 3);
+IplImage *setimagedata(float *data, int w, int h, int nc)  {
+    IplImage *img  = cvCreateImage(cvSize(w, h), IPL_DEPTH_32F, nc);
 
+    int n = nc*w*h;
     for (int i = 0; i < n; i++) {
         img->imageData[i] = data[i];
     }
@@ -75,7 +95,9 @@ IplImage *setimagedata(float *data, int n) {
     return img;
 }
 
-float *getimagedata(IplImage *img, int n) {
+float *getimagedata(IplImage *img) {
+    int n = img->width*img->height*img->nChannels;
+
     float *data = (float *) malloc(n*sizeof(*data));
     if (!data) return NULL;
 
@@ -111,20 +133,20 @@ void display(void) {
     glLoadIdentity();  
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
+    /*
 	glBindTexture(GL_TEXTURE_2D, texture1);
         glTexCoord2f(0.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(-1.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
     glEnd();
-    /*
+    */
 	glBindTexture(GL_TEXTURE_2D, texture2);
         glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(0.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(1.0, -1.0);
     glEnd();
-    */
     SDL_GL_SwapBuffers();
 }
 
@@ -173,63 +195,83 @@ int sdl_main() {
     }
     assert(capture != NULL);
 
-    int n = 160*120*3;
-
-    int nneurons[] = {n, 100};
-    printf("initializing neurons\n");
-    fflush(stdout);
-    hnet *pnet = hinitialize(2, nneurons);
 
 
     float *data;
     IplImage *recon;
+    IplImage *frecon;
     IplImage *img;
-    IplImage *tmp;
-    IplImage *tmp1;
+    IplImage *cpy;
     IplImage *image = cvQueryFrame(capture);
-    SDL_Event e;
-    while (1) {
 
+    int h = image->height;
+    int w = image->width;
+    int nc = image->nChannels;
+
+    int n = h*w*nc;
+    int p = 4;
+    int r = pow(2, 2*p);
+    n /= r;
+
+    int nneurons[] = {n, 10};
+    printf("initializing neurons\n");
+    fflush(stdout);
+    hnet *pnet = hinitialize(2, nneurons);
+
+    SDL_Event e;
+    int i = 0;
+    while (i++ < 1) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
 
-        recon = cvCreateImage(cvSize(160, 120), IPL_DEPTH_8U, 3);
-        tmp = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3);
-        tmp1 = cvCreateImage(cvSize(160, 120), IPL_DEPTH_32F, 3);
-        cvCopyImage(image, tmp);
-        // printf("reducing image size\n");
-        img = reduce(tmp);
-        convertbf(img, tmp1);
+        cpy = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, nc);
 
-        data = getimagedata(tmp1, n);
+        cvCopyImage(image, cpy);
 
-        // printf("setting inputs.\n");
+        img = reduce(cpy, p);
+        if (!img) {
+            printf("reduce error.\n");
+            exit(1);
+        }
+
+        printf("madeit\n");
         fflush(stdout);
+        frecon = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, nc);
+
+        convertbf(img, frecon);
+
+        data = getimagedata(frecon);
+        cvReleaseImage(&frecon);
+
         hsetinputs(pnet, data, 0);
-        hupdate(pnet, .2);
+        // hdumplayer(pnet, 0);
         free(data);
 
-        // printf("reconstructing.\n");
-        fflush(stdout);
-        data = hreconstruction(pnet);
-        hdumpconnections(pnet);
-        cvReleaseImage(&tmp1);
-        tmp1 = setimagedata(data, n);
-        convertfb(tmp1, recon);
+        hupdate(pnet, .2);
 
-        loadTexture_Ipl(img, &texture1); 
+        data = hreconstruction(pnet);
+
+        // hdumplayer(pnet, 1);
+
+        frecon = setimagedata(data, img->width, img->height, nc);
+        recon = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U, nc);
+        convertfb(frecon, recon);
+
+        // loadTexture_Ipl(img, &texture1); 
         loadTexture_Ipl(recon, &texture2);
         display();
-        cvReleaseImage(&img);
+
+        cvReleaseImage(&cpy);
         cvReleaseImage(&recon);
-        cvReleaseImage(&tmp);
+        cvReleaseImage(&frecon);
+        cvReleaseImage(&img);
+
         image = cvQueryFrame(capture);
     }
     //Free our texture
-    FreeTexture(texture1);
+    // FreeTexture(texture1);
     FreeTexture(texture2);
 	
     return 0;
 }
-

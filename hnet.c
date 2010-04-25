@@ -40,7 +40,7 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
 
             for (int k = 0; k < m; k++) {
                 weights[i][j][k] = ((rand() > RAND_MAX/2.0)? 1: -1) *
-                    rand() / (float) RAND_MAX;
+                    (float) rand() / (float) RAND_MAX;
             }
             layers[i].neurons[j].weights = weights[i][j];
         }
@@ -54,6 +54,14 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
     pnet->weights = weights;
 
     return pnet;
+}
+
+int hdumplayer(hnet *net, int layer) {
+    int n = net->layers[layer].nneurons;
+    for (int i = 0; i < n; i++) {
+        printf("Neuron %d: %4.f\n", i, net->layers[layer].neurons[i].v);
+    }
+    return 0;
 }
 
 int hdumpconnections(hnet *net) {
@@ -178,4 +186,3 @@ float *hreconstruction(hnet *net) {
     }
     return data;
 }
-

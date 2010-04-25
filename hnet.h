@@ -28,6 +28,8 @@ float sigmoid(float x);
 
 hnet *hinitialize(int nlayers, int nneurons[]);
 
+int hdumplayer(hnet *h, int layer);
+
 int hdumpconnections(hnet *net);
 
 int hsetinputs(hnet *net, float inputs[], int sigmoid);
