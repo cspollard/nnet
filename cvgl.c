@@ -171,7 +171,7 @@ int sdl_main() {
     int r = pow(2, 2*p);
     n /= r;
 
-    int nneurons[] = {n, 10};
+    int nneurons[] = {n, 1000};
     hnet *pnet = hinitialize(2, nneurons);
 
     SDL_Event e;
@@ -209,8 +209,8 @@ int sdl_main() {
         recon = setimagedata(data, img->width, img->height, nc);
         free(data);
 
-        // loadTexture_Ipl(img, &texture1); 
-        loadTexture_Ipl(recon, &texture2);
+        loadTexture_Ipl(image, &texture2); 
+        // loadTexture_Ipl(recon, &texture2);
         display();
 
         cvReleaseImage(&recon);
