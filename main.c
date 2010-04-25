@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <cv.h>
 #include "nnet.h"
 
 int main(int argc, char *argv[]) {

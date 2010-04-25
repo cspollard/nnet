@@ -1,6 +1,5 @@
 #include "nnet.h"
 
-
 neuron **ninitialize(int n) {
     neuron **neurons = malloc((n+1)*sizeof(*neurons));
     for (int i = 0; i < n; i++) {
@@ -11,7 +10,6 @@ neuron **ninitialize(int n) {
     neurons[n] = NULL;
     return neurons;
 }
-
 
 int nconnect(neuron *n[], neuron *p[], int pmax) {
     for (int i = 0; n[i]; i++) {
@@ -24,7 +22,6 @@ int nconnect(neuron *n[], neuron *p[], int pmax) {
     }
     return 0;
 }
-
 
 int nupdate(neuron **n) {
     float sum;
@@ -50,7 +47,6 @@ int ndumpconnections(neuron **n) {
     return 0;
 }
 
-
 float nfinderr(neuron **n, float values[]) {
     float sum = 0.0;
     for (int i = 0; n[i]; i++) {
@@ -59,7 +55,6 @@ float nfinderr(neuron **n, float values[]) {
     }
     return sum*sum;
 }
-
 
 int nbackpropagate(neuron **n, float g) {
     if (n[0]->p == NULL) {
@@ -80,7 +75,6 @@ int nbackpropagate(neuron **n, float g) {
     
     return 0;
 }
-
 
 int ntrain(neuron **inputs, neuron **hidden, neuron **output,
         float input[], float target[], float g, int debug) {
