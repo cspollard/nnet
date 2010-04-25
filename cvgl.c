@@ -43,7 +43,7 @@ IplImage *setimagedata(float *data, int w, int h, int nc)  {
         for (int j = 0; j < img->width; j++) {
             int n = j * img->nChannels;
             for (int k = 0; k < img->nChannels; k++) {
-                img->ImageData[l+n+k] = (int) (data[m+n+k] * 255.0);
+                img->imageData[l+n+k] = (int) (data[m+n+k] * 255.0);
             }
         }
     }
@@ -56,7 +56,7 @@ float *getimagedata(IplImage *img) {
     float *data = (float *) malloc(n*sizeof(*data));
     if (!data) return NULL;
 
-    int l, m, n;
+    int l, m;
     for (int i = 0; i < img->height; i++) {
         l = i * img->widthStep;
         m = i * img->width;
@@ -95,14 +95,12 @@ void display(void) {
     glLoadIdentity();  
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    /*
 	glBindTexture(GL_TEXTURE_2D, texture1);
         glTexCoord2f(0.0, 0.0); glVertex2f(0.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(-1.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
     glEnd();
-    */
 	glBindTexture(GL_TEXTURE_2D, texture2);
         glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 1.0);
@@ -113,16 +111,7 @@ void display(void) {
 }
 
 void FreeTexture(GLuint texture) {
-  glDeleteTextures(1, &texture);
-}
-
-int reshape(int w, int h) {
-    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60, (GLfloat) w / (GLfloat) h, 1.0, 100.0);
-    glMatrixMode(GL_MODELVIEW);
-    return 0;
+    glDeleteTextures(1, &texture);
 }
 
 int setupgl() {
@@ -157,11 +146,8 @@ int sdl_main() {
     }
     assert(capture != NULL);
 
-
-
     float *data;
     IplImage *recon;
-    IplImage *frecon;
     IplImage *img;
     IplImage *cpy;
     IplImage *image = cvQueryFrame(capture);
@@ -182,7 +168,7 @@ int sdl_main() {
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 1) {
+    while (i++ < 10) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -192,47 +178,38 @@ int sdl_main() {
         cvCopyImage(image, cpy);
 
         img = reduce(cpy, p);
+        cvReleaseImage(&cpy);
         if (!img) {
             printf("reduce error.\n");
             exit(1);
         }
 
-        printf("madeit\n");
-        fflush(stdout);
-        frecon = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, nc);
-
-        convertbf(img, frecon);
-
-        data = getimagedata(frecon);
-        cvReleaseImage(&frecon);
+        data = getimagedata(img);
+        cvReleaseImage(&img);
 
         hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
         free(data);
 
         hupdate(pnet, .2);
-
         data = hreconstruction(pnet);
 
         // hdumplayer(pnet, 1);
 
-        frecon = setimagedata(data, img->width, img->height, nc);
-        recon = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U, nc);
-        convertfb(frecon, recon);
+        recon = setimagedata(data, img->width, img->height, nc);
+        free(data);
 
-        // loadTexture_Ipl(img, &texture1); 
+        loadTexture_Ipl(img, &texture1); 
         loadTexture_Ipl(recon, &texture2);
         display();
 
-        cvReleaseImage(&cpy);
         cvReleaseImage(&recon);
-        cvReleaseImage(&frecon);
         cvReleaseImage(&img);
 
         image = cvQueryFrame(capture);
     }
     //Free our texture
-    // FreeTexture(texture1);
+    FreeTexture(texture1);
     FreeTexture(texture2);
 	
     return 0;
