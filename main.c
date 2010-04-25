@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <time.h>
-// #include "webcam.h" 
+#include "cvgl.h" 
 #include "hnet.h"
 
 int main(int argc, char *argv[]) {
@@ -8,7 +8,9 @@ int main(int argc, char *argv[]) {
 
     int nneurons[5] = {10, 10, 10, 10, 10};
     hnet *pnet = hinitialize(5, nneurons);
-    hdumpconnections(*pnet);
+    // hdumpconnections(*pnet);
+
+    setupgl();
 
     return 0;
 }
