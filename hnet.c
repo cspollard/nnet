@@ -144,3 +144,13 @@ int hupdate(hnet net) {
     }
     return 0;
 }
+
+float *hreconstruction(hnet net) {
+    int n = net.layers[0].nneurons;
+    float *data = (float *) malloc(n*sizeof(*data));
+    for (int i = 0; i < n; i++) {
+        data[i] = net.layers[0].neurons[i].v;
+    }
+    return data;
+}
+
