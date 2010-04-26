@@ -170,14 +170,16 @@ int sdl_main() {
 
     int n = img->width*img->height*img->nChannels;
     int nneurons[] = {n, 100, 100,  100};
-    hnet *pnet = hinitialize(4, nneurons);
+    // hnet *pnet = hinitialize(4, nneurons);
+    hnet *pnet = malloc(sizeof(*pnet));
+    hreadfromfile(pnet, "asdf.hnet");
 
     cvReleaseImage(&cpy);
     cvReleaseImage(&img);
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 1000) {
+    while (i++ < 100) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -217,6 +219,7 @@ int sdl_main() {
 
         image = cvQueryFrame(capture);
     }
+    hdumptofile(pnet, "asdf.hnet");
     //Free our texture
     FreeTexture(texture1);
     FreeTexture(texture2);

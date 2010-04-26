@@ -175,3 +175,70 @@ float *hreconstruction(hnet *net) {
     }
     return data;
 }
+
+int hdumptofile(hnet *net, char filename[]) {
+    FILE *f = fopen(filename, "w");
+    fprintf(f, "<hnet>\n\t<nlayers %d/>\n", net->nlayers);
+    for (int i = 0; i < net->nlayers; i++) {
+        fprintf(f, "\t<layer>\n");
+        fprintf(f, "\t\t<nneurons %d/>\n", net->layers[i].nneurons);
+        fprintf(f, "\t<layer/>\n");
+    }
+
+    fprintf(f, "\t<weights>\n");
+    for (int i = 0; i < net->nlayers-1; i++) {
+        for (int j = 0; j < net->layers[i].nneurons; j++) {
+            for (int k = 0; k < net->layers[i+1].nneurons; k++) {
+                fprintf(f, "\t\t%f\n", net->weights[i][j][k]);
+            }
+            fprintf(f, "\n");
+        }
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\t<weights/>\n");
+    fprintf(f, "<hnet/>\n");
+
+    fclose(f);
+    return 0;
+}
+
+int hreadfromfile(hnet *net, char filename[]) {
+    FILE *f = fopen(filename, "r");
+    fscanf(f, "<hnet>\n\t<nlayers %d/>\n", &(net->nlayers));
+    net->layers = (hlayer *)
+        malloc(net->nlayers*sizeof(*(net->layers)));
+    for (int i = 0; i < net->nlayers; i++) {
+        fscanf(f, "\t<layer>\n");
+        fscanf(f, "\t\t<nneurons %d/>\n", &(net->layers[i].nneurons));
+        fscanf(f, "\t<layer/>\n");
+        net->layers[i].neurons = (hneuron *)
+            malloc(net->layers[i].nneurons *
+                    sizeof(*(net->layers[i].neurons)));
+    }
+
+    fscanf(f, "\t<weights>\n");
+    net->weights = (float ***)
+        malloc(net->nlayers*sizeof(*net->weights));
+    for (int i = 0; i < net->nlayers-1; i++) {
+        net->weights[i] = (float **)
+            malloc(net->layers[i].nneurons *
+                    sizeof(*(net->weights[i])));
+        net->layers[i].weights = net->weights[i];
+        for (int j = 0; j < net->layers[i].nneurons; j++) {
+            net->weights[i][j] = (float *)
+                malloc(net->layers[i+1].nneurons *
+                        sizeof(*(net->weights[i][j])));
+            net->layers[i].neurons[j].weights = net->weights[i][j];
+            for (int k = 0; k < net->layers[i+1].nneurons; k++) {
+                fscanf(f, "\t\t%f\n", &(net->weights[i][j][k]));
+            }
+            fscanf(f, "\n");
+        }
+        fscanf(f, "\n");
+    }
+    fscanf(f, "\t<weights/>\n");
+    fscanf(f, "<hnet/>\n");
+
+    fclose(f);
+    return 0;
+}

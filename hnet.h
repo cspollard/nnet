@@ -39,3 +39,7 @@ int hupdatelayers(hlayer *l, hlayer *m, float e);
 int hupdate(hnet *net, float e);
 
 float *hreconstruction(hnet *net);
+
+int hdumptofile(hnet *net, char filename[]);
+
+int hreadfromfile(hnet *net, char filename[]);
