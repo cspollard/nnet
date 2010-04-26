@@ -169,8 +169,8 @@ int sdl_main() {
     IplImage *recon;
 
     int n = img->width*img->height*img->nChannels;
-    int nneurons[] = {n, 1000, 1000};
-    hnet *pnet = hinitialize(3, nneurons);
+    int nneurons[] = {n, 100, 100,  100};
+    hnet *pnet = hinitialize(4, nneurons);
 
     cvReleaseImage(&cpy);
     cvReleaseImage(&img);
@@ -178,7 +178,6 @@ int sdl_main() {
     SDL_Event e;
     int i = 0;
     while (i++ < 1000) {
-        while (getc(stdin));
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -195,12 +194,12 @@ int sdl_main() {
 
         data = getimagedata(img);
 
-        hsetinputs(pnet, data, 1);
+        hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
         cvReleaseImage(&cpy);
         free(data);
 
-        hupdate(pnet, .1);
+        hupdate(pnet, .01);
         // hdumplayer(pnet, 0);
         data = hreconstruction(pnet);
 
