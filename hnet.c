@@ -27,6 +27,8 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
     if (!weights) return NULL;
 
     for (int i = 0; i < nlayers-1; i++) {
+        printf("initializing layer %d\n", i);
+        fflush(stdout);
         n = nneurons[i];
         m = nneurons[i+1];
 
@@ -101,8 +103,6 @@ int hsetinputs(hnet *net, float inputs[], int sig) {
 int hupdatelayers(hlayer *k, hlayer *l, float e) {
     // i always runs over lower (k) nodes
     // j always runs over upper (l) nodes
-    // printf("up...");
-    // fflush(stdout);
     float **weights = k->weights;
     int n = k->nneurons;
     int m = l->nneurons;
@@ -126,9 +126,6 @@ int hupdatelayers(hlayer *k, hlayer *l, float e) {
         }
     }
 
-    // printf("down...");
-    // fflush(stdout);
-
     for (int i = 0; i < n; i++) {
         sum = 0.0;
         // get the activation of reconstructed k[i]
@@ -137,9 +134,6 @@ int hupdatelayers(hlayer *k, hlayer *l, float e) {
         }
         k->neurons[i].v = sigmoid(sum);
     }
-
-    // printf("up.\n");
-    // fflush(stdout);
 
     for (int j = 0; j < m; j++) {
         sum = 0.0;
@@ -167,14 +161,9 @@ int hupdatelayers(hlayer *k, hlayer *l, float e) {
 
 int hupdate(hnet *net, float e) {
     int nup = net->nlayers - 1;
-    // printf("Updating...\n");
-    // fflush(stdout);
     for (int i = 0; i < nup; i++) {
         hupdatelayers(&(net->layers[i]), &(net->layers[i+1]), e);
     }
-    // printf("done updating...\n");
-    // fflush(stdout);
-
     return 0;
 }
 

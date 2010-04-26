@@ -155,30 +155,30 @@ int sdl_main() {
     }
     assert(capture != NULL);
 
-    float *data0;
     float *data;
-    IplImage *recon;
-    IplImage *img;
-    IplImage *cpy;
-    IplImage *image = cvQueryFrame(capture);
+    int p = 4;
 
+    IplImage *image = cvQueryFrame(capture);
     int h = image->height;
     int w = image->width;
     int nc = image->nChannels;
 
-    int n = h*w*nc;
-    int p = 4;
-    int r = pow(2, 2*p);
-    n /= r;
+    IplImage *cpy = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, nc);
+    cvCopyImage(image, cpy);
+    IplImage *img = reduce(cpy, p);
+    IplImage *recon;
 
-    int nneurons[] = {n, 1000};
-    hnet *pnet = hinitialize(2, nneurons);
+    int n = img->width*img->height*img->nChannels;
+    int nneurons[] = {n, 1000, 1000};
+    hnet *pnet = hinitialize(3, nneurons);
+
+    cvReleaseImage(&cpy);
+    cvReleaseImage(&img);
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 10000) {
-        printf("%d\n", i);
-        fflush(stdout);
+    while (i++ < 1000) {
+        while (getc(stdin));
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -195,7 +195,7 @@ int sdl_main() {
 
         data = getimagedata(img);
 
-        hsetinputs(pnet, data, 0);
+        hsetinputs(pnet, data, 1);
         // hdumplayer(pnet, 0);
         cvReleaseImage(&cpy);
         free(data);
@@ -209,8 +209,8 @@ int sdl_main() {
         recon = setimagedata(data, img->width, img->height, nc);
         free(data);
 
-        loadTexture_Ipl(image, &texture2); 
-        // loadTexture_Ipl(recon, &texture2);
+        // loadTexture_Ipl(image, &texture2); 
+        loadTexture_Ipl(recon, &texture2);
         display();
 
         cvReleaseImage(&recon);
