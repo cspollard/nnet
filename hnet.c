@@ -130,7 +130,7 @@ int hupdatelayers(hlayer *k, hlayer *l, float e) {
         sum = 0.0;
         // get the activation of reconstructed k[i]
         for (int j = 0; j < m; j++) {
-            sum += weights[i][j] * l->neurons[i].v;
+            sum += weights[i][j] * l->neurons[j].v;
         }
         k->neurons[i].v = sigmoid(sum);
     }
@@ -165,6 +165,30 @@ int hupdate(hnet *net, float e) {
         hupdatelayers(&(net->layers[i]), &(net->layers[i+1]), e);
     }
     return 0;
+}
+
+float *hdumpneuron(hnet *net, int n) {
+    for (int i = 0; i < net->layers[net->nlayers-1].nneurons; i++) {
+        net->layers[net->nlayers-1].neurons[i].v = 0.0;
+    }
+    net->layers[net->nlayers-1].neurons[n].v = 1.0;
+
+    int l, m;
+    float sum;
+    for (int k = net->nlayers-1; k > 0; k--) {
+        l = net->layers[k-1].nneurons;
+        for (int i = 0; i < l; i++) {
+            sum = 0.0;
+            m = net->layers[k].nneurons;
+            for (int j = 0; j < m; j++) {
+                sum += net->layers[k-1].weights[i][j] *
+                    net->layers[k].neurons[j].v;
+            }
+            net->layers[k-1].neurons[i].v = sigmoid(sum);
+        }
+    }
+
+    return hreconstruction(net);
 }
 
 float *hreconstruction(hnet *net) {

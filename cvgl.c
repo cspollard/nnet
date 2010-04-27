@@ -169,21 +169,21 @@ int sdl_main() {
     IplImage *recon;
 
     int n = img->width*img->height*img->nChannels;
-    int nneurons[] = {n, 100, 100,  100};
+    int nneurons[] = {n, 100, 100, 100};
     // hnet *pnet = hinitialize(4, nneurons);
     hnet *pnet = malloc(sizeof(*pnet));
     hreadfromfile(pnet, "asdf.hnet");
 
-    cvReleaseImage(&cpy);
-    cvReleaseImage(&img);
+    // cvReleaseImage(&cpy);
+    // cvReleaseImage(&img);
 
     SDL_Event e;
     int i = 0;
-    while (i++ < 100) {
+    while (i < pnet->layers[pnet->nlayers-1].nneurons) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
-
+        /*
         cpy = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, nc);
 
         cvCopyImage(image, cpy);
@@ -206,7 +206,11 @@ int sdl_main() {
         data = hreconstruction(pnet);
 
         // hdumplayer(pnet, 1);
+        */
 
+        data = hdumpneuron(pnet, i);
+        printf("hi\n");
+        fflush(stdout);
         recon = setimagedata(data, img->width, img->height, nc);
         free(data);
 
@@ -214,13 +218,14 @@ int sdl_main() {
         loadTexture_Ipl(recon, &texture2);
         display();
 
-        cvReleaseImage(&recon);
-        cvReleaseImage(&img);
+        // cvReleaseImage(&recon);
+        // cvReleaseImage(&img);
 
-        image = cvQueryFrame(capture);
+        // image = cvQueryFrame(capture);
+        SDL_Delay(1000);
+        i++;
     }
-    hdumptofile(pnet, "asdf.hnet");
-    //Free our texture
+    // hdumptofile(pnet, "asdf.hnet");
     FreeTexture(texture1);
     FreeTexture(texture2);
 	
