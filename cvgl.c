@@ -1,7 +1,6 @@
 #include "cvgl.h"
 
-GLuint texture1; // the array for our incoming image
-GLuint texture2; // the array for our reconstructed image
+GLuint texture1; // the array for our reconstructed image
 
 IplImage *reduce(IplImage *img, int n) {
     if (!n) {
@@ -102,24 +101,18 @@ void display(void) {
     glLoadIdentity();  
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    /*
 	glBindTexture(GL_TEXTURE_2D, texture1);
-        glTexCoord2f(0.0, 0.0); glVertex2f(0.0, 1.0);
+        glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
         glTexCoord2f(1.0, 0.0); glVertex2f(-1.0, 1.0);
         glTexCoord2f(1.0, 1.0); glVertex2f(-1.0, -1.0);
-        glTexCoord2f(0.0, 1.0); glVertex2f(0.0, -1.0);
-    glEnd();
-    */
-	glBindTexture(GL_TEXTURE_2D, texture2);
-        glTexCoord2f(0.0, 0.0); glVertex2f(1.0, 1.0);
-        glTexCoord2f(1.0, 0.0); glVertex2f(0.0, 1.0);
-        glTexCoord2f(1.0, 1.0); glVertex2f(0.0, -1.0);
         glTexCoord2f(0.0, 1.0); glVertex2f(1.0, -1.0);
     glEnd();
     SDL_GL_SwapBuffers();
 }
 
 void FreeTexture(GLuint texture) {
+    printf("help!\n");
+    fflush(stdout);
     glDeleteTextures(1, &texture);
 }
 
@@ -133,7 +126,7 @@ int setupgl() {
 
     SDL_Surface *screen;
      
-    screen = SDL_SetVideoMode(1200, 450, 16, SDL_DOUBLEBUF | SDL_OPENGL);
+    screen = SDL_SetVideoMode(600, 450, 16, SDL_DOUBLEBUF | SDL_OPENGL);
     if (screen == NULL) {
         printf("Unable to set video mode: %s\n", SDL_GetError());
         return 1;
@@ -141,20 +134,17 @@ int setupgl() {
 
     SDL_WM_SetCaption("hello", "HELLO");
 
-    glViewport(0, 0, 1200, 450);
+    glViewport(0, 0, 600, 450);
     return 0;
 }
 
-int sdl_main() {
-    setupgl();
-
+int recon_loop() {
     CvCapture *capture = cvCaptureFromCAM(1);
     if (!capture) {
         printf("Using Built-In Camera.\n");
         capture = cvCaptureFromCAM(0);
     }
     assert(capture != NULL);
-
     float *data;
     int p = 4;
 
@@ -169,18 +159,14 @@ int sdl_main() {
     IplImage *recon;
 
     int n = img->width*img->height*img->nChannels;
-    int nneurons[] = {n, 100, 100, 100};
-    hnet *pnet = hinitialize(4, nneurons);
-    // hnet *pnet = malloc(sizeof(*pnet));
-    // hreadfromfile(pnet, "asdf.hnet");
-
+    int nneurons[] = {n, 100, 500};
+    hnet *pnet = hinitialize(3, nneurons);
     cvReleaseImage(&cpy);
     cvReleaseImage(&img);
-
     SDL_Event e;
     int i = 0;
-    // while (i < pnet->layers[pnet->nlayers-1].nneurons) {
-    while (i < 1000) {
+
+    while (i < 100) {
         SDL_PollEvent(&e);
         if (e.type == SDL_QUIT)
             exit(0);
@@ -191,7 +177,7 @@ int sdl_main() {
 
         img = reduce(cpy, p);
         data = getimagedata(img);
-        hsetinputs(pnet, data, 1);
+        hsetinputs(pnet, data, 0);
         // hdumplayer(pnet, 0);
         cvReleaseImage(&cpy);
         free(data);
@@ -199,27 +185,92 @@ int sdl_main() {
         hupdate(pnet, .1);
         // hdumplayer(pnet, 0);
         data = hreconstruction(pnet);
-        // data = hdumpneuron(pnet, i);
-
-        // hdumplayer(pnet, 1);
 
         recon = setimagedata(data, img->width, img->height, nc);
         free(data);
 
-        // loadTexture_Ipl(image, &texture2); 
-        loadTexture_Ipl(recon, &texture2);
+        loadTexture_Ipl(recon, &texture1);
         display();
 
         cvReleaseImage(&recon);
         cvReleaseImage(&img);
-
         image = cvQueryFrame(capture);
-        // SDL_Delay(100);
+        printf("\rIteration %d", i);
+        fflush(stdout);
         i++;
     }
-    // hdumptofile(pnet, "asdf.hnet");
+    printf("\n");
+    hdumptofile(pnet, "asdf.hnet");
     FreeTexture(texture1);
-    FreeTexture(texture2);
 	
+    return 0;
+}
+
+int ndump_loop() {
+    CvCapture *capture = cvCaptureFromCAM(1);
+    if (!capture) {
+        printf("Using Built-In Camera.\n");
+        capture = cvCaptureFromCAM(0);
+    }
+    assert(capture != NULL);
+    float *data;
+    int p = 4;
+
+    IplImage *image = cvQueryFrame(capture);
+    int h = image->height;
+    int w = image->width;
+    int nc = image->nChannels;
+
+    IplImage *cpy = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, nc);
+    cvCopyImage(image, cpy);
+    IplImage *img = reduce(cpy, p);
+    cvReleaseImage(&cpy);
+    IplImage *recon;
+
+    hnet *pnet = malloc(sizeof(*pnet));
+    hreadfromfile(pnet, "asdf.hnet");
+
+    SDL_Event e;
+    int i = 0;
+    data = hdumpneurons(pnet);
+    recon = setimagedata(data, img->width, img->height, nc);
+    free(data);
+
+    loadTexture_Ipl(recon, &texture1);
+    display();
+    printf("Total Network\n");
+    SDL_Delay(5000);
+    while (i < pnet->layers[pnet->nlayers-1].nneurons) {
+        SDL_PollEvent(&e);
+        if (e.type == SDL_QUIT)
+            exit(0);
+
+        data = hdumpneuron(pnet, i);
+
+        recon = setimagedata(data, img->width, img->height, nc);
+        free(data);
+
+        loadTexture_Ipl(recon, &texture1);
+        display();
+
+        cvReleaseImage(&recon);
+
+        printf("\rNeuron %d", i);
+        fflush(stdout);
+
+        SDL_Delay(100);
+        i++;
+    }
+    cvReleaseImage(&img);
+    FreeTexture(texture1);
+	
+    return 0;
+}
+
+
+int sdl_main() {
+    setupgl();
+
+    ndump_loop();
     return 0;
 }

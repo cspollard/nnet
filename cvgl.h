@@ -19,3 +19,7 @@ int sdl_main();
 float *getimagedata(IplImage *img);
 
 IplImage *setimagedata(float *data, int w, int h, int nc);
+
+int ndump_loop();
+
+int recon_loop();

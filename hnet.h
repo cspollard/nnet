@@ -38,6 +38,8 @@ int hupdatelayers(hlayer *l, hlayer *m, float e);
 
 int hupdate(hnet *net, float e);
 
+float *hdumpneurons(hnet *net);
+
 float *hdumpneuron(hnet *net, int n);
 
 float *hreconstruction(hnet *net);
