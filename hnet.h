@@ -1,7 +1,3 @@
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 
 #ifndef __hnet
     #define __hnet 0
