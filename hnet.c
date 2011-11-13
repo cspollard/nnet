@@ -9,9 +9,9 @@ float sigmoid(float x) {
 }
 
 hnet *hinitialize(int nlayers, int nneurons[]) {
-    hnet *pnet = (hnet *) malloc(sizeof(*pnet));
+    hnet *net = (hnet *) malloc(sizeof(*net));
     hlayer *layers = (hlayer *) malloc((nlayers+1)*sizeof(*layers));
-    if (!pnet || !layers) return NULL;
+    if (!net || !layers) return NULL;
 
     int n, m;
     hneuron *neurons;
@@ -53,13 +53,12 @@ hnet *hinitialize(int nlayers, int nneurons[]) {
         weights[i][n] = NULL;
         layers[i].weights = weights[i];
     }
-    weights[nlayers] = NULL;
 
-    pnet->nlayers = nlayers;
-    pnet->layers = (hlayer *) layers;
-    pnet->weights = weights;
+    net->nlayers = nlayers;
+    net->layers = (hlayer *) layers;
+    net->weights = weights;
 
-    return pnet;
+    return net;
 }
 
 int hdumplayer(hnet *net, int layer) {
@@ -89,31 +88,39 @@ int hdumpconnections(hnet *net) {
     return 0;
 }
 
-int hsetinputs(hnet *net, float inputs[], int sig) {
-    int n = net->layers[0].nneurons;
+int hsetvalues(hnet *net, int layer, float values[], int sig) {
+    int n = net->layers[layer].nneurons;
     if (sig) {
         for (int i = 0; i < n; i++) {
-            net->layers[0].neurons[i].v = sigmoid(inputs[i]);
+            net->layers[layer].neurons[i].v = sigmoid(values[i]);
         }
     } else {
         for (int i = 0; i < n; i++) {
-            net->layers[0].neurons[i].v = inputs[i];
+            net->layers[layer].neurons[i].v = values[i];
         }
     }
 
     return 0;
 }
 
-int hupdatelayers(hlayer *k, hlayer *l, float e) {
+int htrainlayer(hnet *net, int layer, float e) {
+    if (layer < 0 || layer >= net->nlayers)
+        return -1;
+    else if (!layer)
+        return 0;
+
     // i always runs over lower (k) nodes
     // j always runs over upper (l) nodes
+    hlayer *k = net->layers + layer - 1;
+    hlayer *l = net->layers + layer;
     float **weights = k->weights;
     int n = k->nneurons;
     int m = l->nneurons;
     float sum;
-    float **dw = malloc(n*sizeof(*dw));
+
+    float **dw = (float **) malloc(n*sizeof(*dw));
     for (int i = 0; i < n; i++) {
-        dw[i] = malloc(m*sizeof(*dw[i]));
+        dw[i] = (float *) malloc(m*sizeof(*dw[i]));
     }
 
     for (int j = 0; j < m; j++) {
@@ -163,11 +170,74 @@ int hupdatelayers(hlayer *k, hlayer *l, float e) {
     return 0;
 }
 
-int hupdate(hnet *net, float e) {
+int hupdate(hnet *net) {
     int nup = net->nlayers - 1;
-    for (int i = 0; i < nup; i++) {
-        hupdatelayers(&(net->layers[i]), &(net->layers[i+1]), e);
+    for (int i = 0; i < nup; i++)
+        hupdatelayer(net, i);
+
+    return 0;
+}
+
+int hupdatelayer(hnet *net, int layer) {
+    if (layer >= net->nlayers || layer < 0)
+        return -1;
+    else if (!layer)
+        return 0;
+
+    // i always runs over lower (k) nodes
+    // j always runs over upper (l) nodes
+    hlayer *k = net->layers + layer - 1;
+    hlayer *l = net->layers + layer;
+    float **weights = k->weights;
+    int n = k->nneurons;
+    int m = l->nneurons;
+    float sum;
+
+    for (int j = 0; j < m; j++) {
+        sum = 0.0;
+        // get the activation of l[j]
+        for (int i = 0; i < n; i++) {
+            sum += weights[i][j] * k->neurons[i].v;
+        }
+        l->neurons[j].v = sigmoid(sum);
     }
+
+    return 0;
+}
+
+int hreconstruct(hnet *net) {
+    int ndown = net->nlayers - 2;
+    for (int i = ndown; i >= 0; i--)
+        hreconstructlayer(net, i);
+
+    return 0;
+}
+
+
+int hreconstructlayer(hnet *net, int layer) {
+    if (layer >= net->nlayers || layer < 0)
+        return -1;
+    else if (layer == net->nlayers - 1)
+        return 0;
+
+    // i always runs over lower (k) nodes
+    // j always runs over upper (l) nodes
+    hlayer *k = net->layers + layer;
+    hlayer *l = net->layers + layer + 1;
+    float **weights = k->weights;
+    int n = k->nneurons;
+    int m = l->nneurons;
+    float sum;
+
+    for (int i = 0; i < n; i++) {
+        sum = 0.0;
+        // get the activation of reconstructed k[i]
+        for (int j = 0; j < m; j++) {
+            sum += weights[i][j] * l->neurons[j].v;
+        }
+        k->neurons[i].v = sigmoid(sum);
+    }
+
     return 0;
 }
 
@@ -253,9 +323,12 @@ int hdumptofile(hnet *net, char filename[]) {
     return 0;
 }
 
-int hreadfromfile(hnet *net, char filename[]) {
+hnet *hreadfromfile(char filename[]) {
+    hnet *net = (hnet *) malloc(sizeof(*net));
+
     FILE *f = fopen(filename, "r");
     fscanf(f, "<hnet>\n\t<nlayers %d/>\n", &(net->nlayers));
+    
     net->layers = (hlayer *)
         malloc(net->nlayers*sizeof(*(net->layers)));
     for (int i = 0; i < net->nlayers; i++) {
@@ -291,5 +364,10 @@ int hreadfromfile(hnet *net, char filename[]) {
     fscanf(f, "<hnet/>\n");
 
     fclose(f);
+
+    return net;
+}
+
+int hbackprop(hnet *net, int layer, float e) {
     return 0;
 }
